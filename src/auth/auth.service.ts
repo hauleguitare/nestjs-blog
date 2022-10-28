@@ -3,16 +3,20 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { plainToClass } from 'class-transformer';
+import { CreateUserDto } from 'src/users/models/create-user.dto';
 import { UserDto } from 'src/users/models/user.dto';
 import { UserService } from 'src/users/user.services';
-import { SignInDto } from './models/sign-in.dto';
-import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from 'src/users/models/create-user.dto';
+import { IAuthenticatePayload } from './interfaces/Authenticate-payload.interface';
 
 @Injectable()
 export class AuthService {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private jwtService: JwtService,
+  ) {}
 
   async ValidateUser(usernameOrEmail: string, password: string) {
     const user = await this.userService.findUsernameOrEmail(usernameOrEmail);
@@ -31,5 +35,20 @@ export class AuthService {
 
   async SignUp(createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
+  }
+
+  async Login(user: UserDto) {
+    const payload = this.registerPayload(user);
+    return {
+      ...user,
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
+
+  private registerPayload(user: UserDto): IAuthenticatePayload {
+    return {
+      ...user,
+      sub: user.uid,
+    };
   }
 }
