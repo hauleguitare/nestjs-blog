@@ -8,7 +8,12 @@ import { DatabaseModule } from './database/database.module';
 import { UserModule } from './users/user.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), DatabaseModule, UserModule, AuthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
+    UserModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService, IsUserAlreadyExistConstraint],
 })
