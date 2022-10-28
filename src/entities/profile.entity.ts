@@ -1,6 +1,7 @@
 import { Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
 
+//! ERROR CANNOT REMOVE IF USER DELETE
 @Entity('profile')
 export class ProfileEntity {
   @PrimaryColumn({ type: 'char', length: 26 })

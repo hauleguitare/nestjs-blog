@@ -59,6 +59,6 @@ export class UserEntity {
   profile: ProfileEntity;
 
   @ManyToMany(() => RoleEntity, { cascade: true })
-  @JoinTable({ name: 'user_role' })
+  @JoinTable({ name: 'user_role' }) //! ERROR CANNOT REMOVE IF USER DELETE
   roles: RoleEntity[];
 }
