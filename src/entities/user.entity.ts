@@ -1,6 +1,8 @@
+import { CreateUserDto } from 'src/users/models/create-user.dto';
 import {
   BeforeInsert,
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   JoinTable,
@@ -8,11 +10,16 @@ import {
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
+import { ulid } from 'ulid';
 import { ProfileEntity } from './profile.entity';
 import { RoleEntity } from './role.entity';
 
-@Entity('user')
+@Entity('users')
 export class UserEntity {
+  constructor() {
+    this.uid = ulid();
+  }
+
   @PrimaryColumn({
     type: 'char',
     length: 26,
@@ -31,23 +38,27 @@ export class UserEntity {
   })
   email: string;
 
-  @Column({ select: false })
+  @Column()
   passwordHash: string;
 
-  @Column({ select: false })
+  @Column()
   passwordSalt: string;
 
-  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   createAt: Date;
 
+  @BeforeInsert()
+  private updateLoginTime() {
+    this.lastLogin = new Date();
+  }
   @Column({ type: 'timestamptz', nullable: true })
   lastLogin: Date;
 
-  @OneToOne(() => ProfileEntity, (profile) => profile.user)
+  @OneToOne(() => ProfileEntity, (profile) => profile.user, { cascade: true })
   @JoinColumn()
   profile: ProfileEntity;
 
-  @ManyToMany(() => RoleEntity)
+  @ManyToMany(() => RoleEntity, { cascade: true })
   @JoinTable({ name: 'user_role' })
   roles: RoleEntity[];
 }
