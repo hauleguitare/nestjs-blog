@@ -14,14 +14,12 @@ import { CreateUserDto } from 'src/users/models/create-user.dto';
 export class AuthService {
   constructor(private userService: UserService) {}
 
-  async Login(signinDto: SignInDto) {
-    const user = await this.userService.findUsernameOrEmail(
-      signinDto.usernameOrEmail,
-    );
+  async ValidateUser(usernameOrEmail: string, password: string) {
+    const user = await this.userService.findUsernameOrEmail(usernameOrEmail);
     if (!user) {
       throw new NotFoundException('user is not exist');
     }
-    const isValid = await bcrypt.compare(signinDto.password, user.passwordHash);
+    const isValid = await bcrypt.compare(password, user.passwordHash);
     if (isValid) {
       const dateLogin = new Date();
       await this.userService.updateTimeLogin(user.uid, dateLogin);
