@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { plainToClass } from 'class-transformer';
-import { ProfileEntity } from 'src/entities/profile.entity';
 import { RoleEntity } from 'src/entities/role.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -19,7 +18,6 @@ export class UserService {
   async findAll(): Promise<UserDto[]> {
     const users = await this.userRepo
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
       .leftJoinAndSelect('user.roles', 'roles')
       .getMany();
     return users.map((user) => plainToClass(UserDto, user));
@@ -38,7 +36,6 @@ export class UserService {
   ): Promise<UserEntity | null> {
     const user = this.userRepo
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.profile', 'profile')
       .leftJoinAndSelect('user.roles', 'roles')
       .where('user.username = :username', { username: usernameOrEmail })
       .orWhere('user.email = :email', { email: usernameOrEmail })
@@ -65,18 +62,11 @@ export class UserService {
     const [passwordHash, salt] = await this.genPasswordHash(userData.password);
     newUser.passwordHash = passwordHash;
     newUser.passwordSalt = salt;
-    const newProfile = new ProfileEntity(
-      newUser.uid,
-      userData.firstName,
-      userData.lastName,
-    );
-    newUser.profile = newProfile;
     newUser.roles = [newRole];
 
     const user = await this.userRepo.save(newUser);
     return plainToClass(UserDto, user);
   }
-
   private async genPasswordHash(
     password: string,
   ): Promise<readonly [string, string]> {
@@ -87,5 +77,19 @@ export class UserService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async deleteOne(userId: string): Promise<UserDto> {
+    const user = await this.userRepo.findOne({
+      where: { uid: userId },
+      relations: {
+        roles: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException();
+    }
+    const deleteUser = await this.userRepo.remove(user);
+    return plainToClass(UserDto, deleteUser);
   }
 }
