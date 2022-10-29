@@ -11,13 +11,12 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { ulid } from 'ulid';
-import { ProfileEntity } from './profile.entity';
 import { RoleEntity } from './role.entity';
 
 @Entity('users')
 export class UserEntity {
   constructor() {
-    this.uid = ulid();
+    this.uid = ulid(Math.floor(new Date().getTime() / 1000));
   }
 
   @PrimaryColumn({
@@ -44,7 +43,22 @@ export class UserEntity {
   @Column()
   passwordSalt: string;
 
-  @CreateDateColumn()
+  @Column({ type: 'varchar', default: '' })
+  photoURL: string;
+
+  @Column({ type: 'varchar', default: '' })
+  bannerURL: string;
+
+  @Column({ type: 'varchar', length: 255, default: '' })
+  bio: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: false })
+  firstName: string;
+
+  @Column({ type: 'varchar', length: 50, nullable: false })
+  lastName: string;
+
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createAt: Date;
 
   @BeforeInsert()
@@ -53,10 +67,6 @@ export class UserEntity {
   }
   @Column({ type: 'timestamptz', nullable: true })
   lastLogin: Date;
-
-  @OneToOne(() => ProfileEntity, (profile) => profile.user, { cascade: true })
-  @JoinColumn()
-  profile: ProfileEntity;
 
   @ManyToMany(() => RoleEntity, { cascade: true })
   @JoinTable({ name: 'user_role' }) //! ERROR CANNOT REMOVE IF USER DELETE
