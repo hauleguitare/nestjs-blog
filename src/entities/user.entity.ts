@@ -1,13 +1,9 @@
-import { CreateUserDto } from 'src/users/models/create-user.dto';
 import {
   BeforeInsert,
   Column,
-  CreateDateColumn,
   Entity,
-  JoinColumn,
   JoinTable,
   ManyToMany,
-  OneToOne,
   PrimaryColumn,
 } from 'typeorm';
 import { ulid } from 'ulid';

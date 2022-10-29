@@ -6,7 +6,7 @@ import {
   ValidationOptions,
   registerDecorator,
 } from 'class-validator';
-import { UserService } from 'src/users/user.services';
+import { UserService } from 'src/users/user.service';
 
 @ValidatorConstraint({ async: true })
 @Injectable()

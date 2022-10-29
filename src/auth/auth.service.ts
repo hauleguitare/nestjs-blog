@@ -1,4 +1,6 @@
 import {
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -8,7 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { plainToClass } from 'class-transformer';
 import { CreateUserDto } from 'src/users/models/create-user.dto';
 import { UserDto } from 'src/users/models/user.dto';
-import { UserService } from 'src/users/user.services';
+import { UserService } from 'src/users/user.service';
 import { IAuthenticatePayload } from './interfaces/Authenticate-payload.interface';
 
 @Injectable()
@@ -34,7 +36,8 @@ export class AuthService {
   }
 
   async SignUp(createUserDto: CreateUserDto) {
-    return this.userService.createUser(createUserDto);
+    const user = await this.userService.createUser(createUserDto);
+    return this.Login(user);
   }
 
   async Login(user: UserDto) {
