@@ -1,10 +1,10 @@
 import {
-  forwardRef,
-  Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { plainToClass } from 'class-transformer';
@@ -18,6 +18,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   async ValidateUser(usernameOrEmail: string, password: string) {
@@ -42,10 +43,47 @@ export class AuthService {
 
   async Login(user: UserDto) {
     const payload = this.registerPayload(user);
+    const [accessToken, refreshToken] = await this.getTokens(payload);
     return {
       ...user,
-      accessToken: this.jwtService.sign(payload),
+      accessToken,
+      refreshToken,
     };
+  }
+
+  private async getTokens(payload: IAuthenticatePayload) {
+    const accessToken = this.getAccessToken(payload);
+
+    const refreshToken = this.getRefreshToken(payload);
+    return Promise.all([accessToken, refreshToken]);
+  }
+
+  private async getAccessToken(payload: IAuthenticatePayload): Promise<string> {
+    return this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>('JWT_SERCET_KEY'),
+      expiresIn: 60,
+    });
+  }
+
+  private async getRefreshToken(
+    payload: IAuthenticatePayload,
+  ): Promise<string> {
+    return this.jwtService.signAsync(payload, {
+      secret: this.configService.get<string>('JWT_REFRESH_SERCET_KEY'),
+      expiresIn: 3600 * 24 * 7,
+    });
+  }
+
+  async refreshToken(refreshToken: string) {
+    const decode = this.jwtService.decode(
+      refreshToken,
+    ) as IAuthenticatePayload | null;
+    if (!decode) {
+      throw new InternalServerErrorException('error when decode refresh token');
+    }
+    const { iat, exp, ...user } = decode;
+    const accessToken = await this.getAccessToken(user as IAuthenticatePayload);
+    return { accessToken };
   }
 
   private registerPayload(user: UserDto): IAuthenticatePayload {
