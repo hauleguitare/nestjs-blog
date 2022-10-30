@@ -1,4 +1,5 @@
-import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { UserDto } from './models/user.dto';
 import { UserService } from './user.service';
 
@@ -12,6 +13,7 @@ export class UserController {
   }
 
   @Delete(':uid')
+  @UseGuards(JwtAuthGuard)
   async deleteOne(@Param('uid') userId: string): Promise<UserDto> {
     console.log(userId);
     return this.userService.deleteOne(userId);
