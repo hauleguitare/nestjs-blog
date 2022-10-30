@@ -1,6 +1,11 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
+import { Observable } from 'rxjs';
 import { Authentication } from 'src/common/enum/auth.enum';
 import {
   UnauthorizedTokenExpiredException,
@@ -8,7 +13,7 @@ import {
 } from 'src/exceptions/jwt.exception';
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard(Authentication.JWT) {
+export class RefreshJWTAuthGuard extends AuthGuard(Authentication.REFRESH_JWT) {
   handleRequest<TUser = any>(
     err: any,
     user: any,
