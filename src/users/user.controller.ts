@@ -12,10 +12,14 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Get(':uid')
+  async findOne(@Param('uid') userId: string): Promise<UserDto> {
+    return this.userService.findOne(userId);
+  }
+
   @Delete(':uid')
   @UseGuards(JwtAuthGuard)
   async deleteOne(@Param('uid') userId: string): Promise<UserDto> {
-    console.log(userId);
     return this.userService.deleteOne(userId);
   }
 }

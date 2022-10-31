@@ -1,15 +1,10 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { plainToClass } from 'class-transformer';
-import { AuthService } from 'src/auth/auth.service';
 import { RoleEntity } from 'src/entities/role.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { NotFoundEntityException } from 'src/exceptions/entity.exception';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './models/create-user.dto';
 import { UserDto } from './models/user.dto';
@@ -29,10 +24,18 @@ export class UserService {
     return users.map((user) => plainToClass(UserDto, user));
   }
 
+  async findOne(uid: string): Promise<UserDto> {
+    const user = await this.findById(uid);
+    return plainToClass(UserDto, user);
+  }
+
   async findById(uid: string): Promise<UserEntity | null> {
-    const user = await this.userRepo.findOne({ where: { uid } });
+    const user = await this.userRepo.findOne({
+      where: { uid },
+      relations: { roles: true },
+    });
     if (!user) {
-      throw new NotFoundException();
+      throw new NotFoundEntityException('users', uid);
     }
     return user;
   }
