@@ -15,6 +15,10 @@ export class TagEntity {
   @Column({ unique: true })
   name: string;
 
-  @ManyToMany(() => PostEntity, (post) => post.tags)
+  @ManyToMany(() => PostEntity, (post) => post.tags, {
+    cascade: true,
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
   posts: PostEntity[];
 }
