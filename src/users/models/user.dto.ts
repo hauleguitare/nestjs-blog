@@ -1,13 +1,5 @@
-import {
-  Exclude,
-  Expose,
-  plainToClass,
-  Transform,
-  Type,
-} from 'class-transformer';
+import { Exclude, Transform, Type } from 'class-transformer';
 import { RoleEntity } from 'src/entities/role.entity';
-import { UserEntity } from 'src/entities/user.entity';
-import { ProfileDto } from './profile.dto';
 
 export class UserDto {
   constructor(props: any) {
@@ -28,7 +20,7 @@ export class UserDto {
   @Type(() => Date)
   @Transform(({ value }) => Math.floor(value.getTime() / 1000))
   lastLogin: number;
-  
+
   photoURL: string;
   bannerURL: string;
   bio: string;

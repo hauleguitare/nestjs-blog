@@ -37,16 +37,16 @@ export class PostEntity {
   comments: CommentEntity[];
 
   @BeforeInsert()
-  private createTime = () => {
+  private createTime() {
     this.createAt = new Date();
-  };
+  }
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   createAt: Date;
 
   @BeforeUpdate()
-  private updateTime = () => {
+  private updateTime() {
     this.updateAt = new Date();
-  };
+  }
   @Column({ type: 'timestamptz', nullable: true, default: null })
   updateAt: Date;
 }
