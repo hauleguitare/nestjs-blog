@@ -1,8 +1,14 @@
 import { Role } from 'src/common/enum/role.enum';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('role')
 export class RoleEntity {
+  constructor() {
+    this.id = 0;
+    (this.name = Role.MEMBER), (this.isAdmin = false);
+    this.isModerate = false;
+  }
+
   @PrimaryGeneratedColumn({
     type: 'int',
   })
