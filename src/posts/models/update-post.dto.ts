@@ -7,5 +7,6 @@ export class UpdatePostDto {
   @IsNotEmpty()
   content: string;
   @IsArray()
-  tags: number[];
+  @IsOptional()
+  tags?: number[];
 }
