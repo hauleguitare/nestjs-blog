@@ -15,10 +15,15 @@ export class UserDto {
 
   @Type(() => Date)
   @Transform(({ value }) => Math.floor(value.getTime() / 1000))
-  createAt: Date;
+  createAt: number;
 
   @Type(() => Date)
-  @Transform(({ value }) => Math.floor(value.getTime() / 1000))
+  @Transform(({ value }) => {
+    if (value !== null) {
+      return Math.floor(value.getTime() / 1000);
+    }
+    return null;
+  })
   lastLogin: number;
 
   photoURL: string;
