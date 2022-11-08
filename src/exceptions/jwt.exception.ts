@@ -10,7 +10,7 @@ export class UnauthorizedTokenExpiredException extends HttpException {
       {
         statusCode: HttpStatus.UNAUTHORIZED,
         message: 'auth/token-expired',
-        error: 'Token expired',
+        error: 'Unauthorized',
       },
       HttpStatus.UNAUTHORIZED,
     );
@@ -23,7 +23,7 @@ export class UnauthorizedTokenInvalidSignatureException extends HttpException {
       {
         statusCode: HttpStatus.UNAUTHORIZED,
         message: 'auth/token-invalid-signature',
-        error: 'Token invalid signature',
+        error: 'Unauthorized',
       },
       HttpStatus.UNAUTHORIZED,
     );

@@ -6,7 +6,7 @@ export class NotFoundEntityException extends HttpException {
       {
         statusCode: HttpStatus.NOT_FOUND,
         message: `${path}/not-found`,
-        error: `${path} ${target} not found`,
+        error: `NotFound`,
       },
       HttpStatus.NOT_FOUND,
     );
