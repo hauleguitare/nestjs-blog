@@ -12,13 +12,11 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { PostEntity } from './post.entity';
+import { BaseEntity } from 'src/common/base/base.entity';
 
 @Entity('comment')
 @Tree('closure-table')
-export class CommentEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class CommentEntity extends BaseEntity {
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'authorId' })
   author: UserEntity;
@@ -32,19 +30,4 @@ export class CommentEntity {
 
   @TreeParent({ onDelete: 'CASCADE' })
   parent: CommentEntity;
-
-  @BeforeInsert()
-  private createTime = () => {
-    this.createAt = new Date();
-  };
-
-  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  createAt: Date;
-
-  @BeforeUpdate()
-  private updateTime = () => {
-    this.updateAt = new Date();
-  };
-  @Column({ type: 'timestamptz', nullable: true, default: null })
-  updateAt: Date;
 }
