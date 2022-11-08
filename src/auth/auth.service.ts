@@ -61,7 +61,7 @@ export class AuthService {
   private async getAccessToken(payload: IAuthenticatePayload): Promise<string> {
     return this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('JWT_SERCET_KEY'),
-      expiresIn: 60,
+      expiresIn: 60 * 60,
     });
   }
 
