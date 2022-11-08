@@ -1,11 +1,21 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToInstance } from 'class-transformer';
+import { Paginate } from 'src/common/dto/paginate.dto';
+import { IQueryOptions } from 'src/common/interfaces/query-options.interface';
 import { TagEntity } from 'src/entities/tag.entity';
 import { NotFoundEntityException } from 'src/exceptions/entity.exception';
+import { PostService } from 'src/posts/post.service';
 import { IResponsePostStatus } from 'src/status/reponse-status.interface';
 import { ReponseStatusSuccess } from 'src/status/response-status';
 import { Repository } from 'typeorm';
 import { CreateTagDto } from './models/create-tag-dto';
+import { TagDto } from './models/tag.dto';
 import { UpdateTagDto } from './models/update-tag-dto';
 
 @Injectable()
@@ -13,13 +23,33 @@ export class TagService {
   constructor(
     @InjectRepository(TagEntity)
     private readonly tagRepo: Repository<TagEntity>,
+    @Inject(forwardRef(() => PostService))
+    private readonly postService: PostService,
   ) {}
 
-  async findAll(): Promise<TagEntity[]> {
-    return this.tagRepo.find();
+  async findAll(queryOption: IQueryOptions): Promise<Paginate<TagDto>> {
+    const skip = Paginate.calcSkip(queryOption.page);
+    const [tags, total_results] = await this.tagRepo.findAndCount({
+      skip: skip,
+      take: Paginate.TAKE, //?Using to pagination
+      order: {
+        id: 'asc',
+      },
+      relations: ['posts'],
+    });
+    const results = tags.map((tag) => {
+      const tagDto = plainToInstance(TagDto, tag);
+      tagDto.total_posts = tag.posts.length;
+      return tagDto;
+    });
+    return new Paginate({
+      results,
+      total_results,
+      queryOption,
+    });
   }
 
-  async findById(tagId: number): Promise<TagEntity> {
+  async findById(tagId: number): Promise<TagDto> {
     const tag = await this.tagRepo.findOne({
       where: {
         id: tagId,
@@ -31,7 +61,7 @@ export class TagService {
     if (!tag) {
       throw new NotFoundEntityException('tags', tagId.toString());
     }
-    return tag;
+    return plainToInstance(TagDto, tag);
   }
 
   async findTag(tagName: string): Promise<TagEntity | null> {
@@ -40,6 +70,11 @@ export class TagService {
         name: tagName,
       },
     });
+  }
+
+  async findPostLatest(tagId: number): Promise<any> {
+    const post = await this.postService.findPostLatestByTagId(tagId);
+    return post;
   }
 
   async createTag(createTagDto: CreateTagDto): Promise<IResponsePostStatus> {
@@ -67,5 +102,18 @@ export class TagService {
     const updateTag = Object.assign(tag, updateTagDto);
     const _ = await this.tagRepo.save(updateTag);
     return ReponseStatusSuccess();
+  }
+
+  async deleteTag(tagId: number): Promise<TagEntity> {
+    const deleteTag = await this.tagRepo.findOne({
+      where: {
+        id: tagId,
+      },
+    });
+    if (!deleteTag) {
+      throw new NotFoundEntityException('tags', tagId.toString());
+    }
+    await this.tagRepo.delete(deleteTag);
+    return deleteTag;
   }
 }
